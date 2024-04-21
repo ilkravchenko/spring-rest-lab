@@ -9,8 +9,11 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.servlet.config.annotation.EnableWebMvc
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import org.springframework.web.servlet.function.RouterFunction
+import org.springframework.web.servlet.function.ServerResponse
+import org.springframework.web.servlet.function.body
 import org.springframework.web.servlet.function.router
-import ua.kpi.its.lab.rest.dto.ExampleDto
+import ua.kpi.its.lab.rest.dto.SoftwareProductsRequest
+import ua.kpi.its.lab.rest.svc.SoftwareProductService
 import java.text.SimpleDateFormat
 
 @Configuration
@@ -28,11 +31,38 @@ class WebConfig : WebMvcConfigurer {
     }
 
     @Bean
-    fun functionalRoutes(): RouterFunction<*> = router {
+    fun functionalRoutes(softwareProductService: SoftwareProductService): RouterFunction<*> = router {
+        fun wrapNotFoundError(call: () -> Any): ServerResponse {
+            return try {
+                val result = call()
+                ok().body(result)
+            }
+            catch (e: IllegalArgumentException) {
+                notFound().build()
+            }
+        }
+
         "/fn".nest {
-            "/example".nest {
+            "/software-products".nest {
                 GET("") {
-                    ok().body(ExampleDto("example"))
+                    ok().body(softwareProductService.read())
+                }
+                GET("/{id}") { req ->
+                    val id = req.pathVariable("id").toLong()
+                    wrapNotFoundError { softwareProductService.readById(id) }
+                }
+                POST("") { req ->
+                    val vehicle = req.body<SoftwareProductsRequest>()
+                    ok().body(softwareProductService.create(vehicle))
+                }
+                PUT("/{id}") { req ->
+                    val id = req.pathVariable("id").toLong()
+                    val product = req.body<SoftwareProductsRequest>()
+                    wrapNotFoundError { softwareProductService.updateById(id, product) }
+                }
+                DELETE("/{id}") { req ->
+                    val id = req.pathVariable("id").toLong()
+                    wrapNotFoundError { softwareProductService.deleteById(id) }
                 }
             }
 
