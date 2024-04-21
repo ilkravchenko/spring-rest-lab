@@ -8,7 +8,7 @@ data class SoftwareProductsRequest(
     var distributionSize: Long,
     var bitness: Int,
     var crossPlatform: Boolean,
-    var modules: SoftwareModuleRequest
+    var modules: List<SoftwareModuleRequest>
 )
 
 data class SoftwareProductsResponse(

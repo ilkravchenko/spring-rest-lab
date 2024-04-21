@@ -1,7 +1,7 @@
 package ua.kpi.its.lab.rest.entity
 
 import jakarta.persistence.*
-import java.util.*
+import java.time.LocalDate
 
 @Entity
 @Table(name = "software_products")
@@ -16,7 +16,7 @@ class SoftwareProduct(
     var version: String,
 
     @Column
-    var releaseDate: Date,
+    var releaseDate: LocalDate,
 
     @Column
     var distributionSize: Long,
@@ -57,7 +57,7 @@ class SoftwareModule(
     var language: String,
 
     @Column
-    var lastEditDate: Date,
+    var lastEditDate: LocalDate,
 
     @Column
     var size: Long,

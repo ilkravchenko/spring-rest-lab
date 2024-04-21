@@ -12,7 +12,9 @@ import org.springframework.web.servlet.function.RouterFunction
 import org.springframework.web.servlet.function.ServerResponse
 import org.springframework.web.servlet.function.body
 import org.springframework.web.servlet.function.router
+import ua.kpi.its.lab.rest.dto.SoftwareModuleRequest
 import ua.kpi.its.lab.rest.dto.SoftwareProductsRequest
+import ua.kpi.its.lab.rest.svc.SoftwareModuleService
 import ua.kpi.its.lab.rest.svc.SoftwareProductService
 import java.text.SimpleDateFormat
 
@@ -68,4 +70,42 @@ class WebConfig : WebMvcConfigurer {
 
         }
     }
+
+    @Bean
+    fun moduleFunctionalRoutes(softwareModuleService: SoftwareModuleService): RouterFunction<*> = router {
+        fun wrapNotFoundError(call: () -> Any): ServerResponse {
+            return try {
+                val result = call()
+                ok().body(result)
+            } catch (e: IllegalArgumentException) {
+                notFound().build()
+            }
+        }
+
+        "/fn".nest {
+            "/software-modules".nest {
+                GET("") {
+                    ok().body(softwareModuleService.read())
+                }
+                GET("/{id}") { req ->
+                    val id = req.pathVariable("id").toLong()
+                    wrapNotFoundError { softwareModuleService.readById(id) }
+                }
+                POST("") { req ->
+                    val module = req.body<SoftwareModuleRequest>()
+                    ok().body(softwareModuleService.create(module))
+                }
+                PUT("/{id}") { req ->
+                    val id = req.pathVariable("id").toLong()
+                    val module = req.body<SoftwareModuleRequest>()
+                    wrapNotFoundError { softwareModuleService.updateById(id, module) }
+                }
+                DELETE("/{id}") { req ->
+                    val id = req.pathVariable("id").toLong()
+                    wrapNotFoundError { softwareModuleService.deleteById(id) }
+                }
+            }
+        }
+    }
 }
+
