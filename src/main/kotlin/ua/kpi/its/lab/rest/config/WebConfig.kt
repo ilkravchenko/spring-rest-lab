@@ -52,8 +52,8 @@ class WebConfig : WebMvcConfigurer {
                     wrapNotFoundError { softwareProductService.readById(id) }
                 }
                 POST("") { req ->
-                    val vehicle = req.body<SoftwareProductsRequest>()
-                    ok().body(softwareProductService.create(vehicle))
+                    val product = req.body<SoftwareProductsRequest>()
+                    ok().body(softwareProductService.create(product))
                 }
                 PUT("/{id}") { req ->
                     val id = req.pathVariable("id").toLong()
